@@ -115,13 +115,17 @@ class rdp(connection):
         return True
 
     def create_conn_obj(self):
-        self.target = RDPTarget(ip=self.host, domain="FAKE", port=self.port, timeout=self.args.rdp_timeout)
+        self.target = RDPTarget(ip=self.host, domain="FAKE", port=self.port, timeout=self.args.rdp_timeout, unsafe_ssl=True)
         self.auth = NTLMCredential(secret="pass", username="user", domain="FAKE", stype=asyauthSecret.PASS)
 
         self.check_nla()
-
-        for proto in reversed(self.protoflags):
+        self.logger.debug(f'NLA ? {self.nla}')
+        fflags = [
+            SUPP_PROTOCOLS.SSL
+        ]
+        for proto in reversed(fflags):
             try:
+                self.logger.debug(f'Using proto: {proto.name}')
                 self.iosettings.supported_protocols = proto
                 self.conn = RDPConnection(
                     iosettings=self.iosettings,
@@ -130,9 +134,11 @@ class rdp(connection):
                 )
                 asyncio.run(self.connect_rdp())
             except OSError as e:
+                self.logger.debug(f'create_conn_obj OSError: {e}')
                 if "Errno 104" not in str(e):
                     return False
             except Exception as e:
+                self.logger.debug(f'create_conn_obj failed: {e}')
                 if "TCPSocket" in str(e):
                     return False
                 if "Reason:" not in str(e):
@@ -167,6 +173,7 @@ class rdp(connection):
             domain=self.domain,
             dc_ip=self.domain,
             timeout=self.args.rdp_timeout,
+            unsafe_ssl=True
         )
 
         return True

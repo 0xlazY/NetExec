@@ -34,7 +34,7 @@ nxcdb = 'nxc.nxcdb:main'
 
 [tool.poetry.dependencies]
 python = "^3.8.0"
-aardwolf = "^0.2.8"
+aardwolf = "^0.2.9"
 aioconsole = "^0.6.2"
 aiosqlite = "^0.19.0"
 argcomplete = "^3.1.4"
